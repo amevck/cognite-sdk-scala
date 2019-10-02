@@ -27,6 +27,7 @@ val fs2Version: Option[(Long, Long)] => String = {
 lazy val gpgPass = Option(System.getenv("GPG_KEY_PASSWORD"))
 
 lazy val commonSettings = Seq(
+  // siteSourceDirectory := baseDirectory.value / "target" / "scala-2.12" / "api" / "com" / "cognite" / "sdk" / "scala",
   name := "cognite-sdk-scala",
   organization := "com.cognite",
   organizationName := "Cognite",
@@ -96,9 +97,11 @@ lazy val core = (project in file("."))
     ) ++ scalaTestDeps ++ sttpDeps ++ circeDeps(CrossVersion.partialVersion(scalaVersion.value))
   )
   .enablePlugins(BuildInfoPlugin)
+  .enablePlugins(SiteScaladocPlugin)
   .settings(
     buildInfoKeys := Seq[BuildInfoKey](organization, version, organizationName),
-    buildInfoPackage := "BuildInfo"
+    buildInfoPackage := "BuildInfo",
+    siteSubdirName in SiteScaladoc := "api/latest"
   )
 
 val scalaTestDeps = Seq(

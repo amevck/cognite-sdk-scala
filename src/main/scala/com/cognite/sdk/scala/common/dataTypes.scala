@@ -10,26 +10,26 @@ import io.scalaland.chimney.dsl._
 
 final case class ItemsWithCursor[A](items: Seq[A], nextCursor: Option[String] = None)
 final case class Items[A](items: Seq[A])
-final case class SdkException(message: String) extends Throwable(message)
-final case class CdpApiErrorPayload(
+private[sdk] final case class SdkException(message: String) extends Throwable(message)
+private[sdk] final case class CdpApiErrorPayload(
     code: Int,
     message: String,
     missing: Option[Seq[JsonObject]],
     duplicated: Option[Seq[JsonObject]],
     missingFields: Option[Seq[String]]
 )
-final case class CdpApiError(error: CdpApiErrorPayload) {
+private[sdk] final case class CdpApiError(error: CdpApiErrorPayload) {
   def asException(url: Uri): CdpApiException =
     this.error
       .into[CdpApiException]
       .withFieldConst(_.url, url)
       .transform
 }
-object CdpApiError {
+private[sdk] object CdpApiError {
   implicit val cdpApiErrorPayloadDecoder: Decoder[CdpApiErrorPayload] = deriveDecoder
   implicit val cdpApiErrorDecoder: Decoder[CdpApiError] = deriveDecoder
 }
-final case class CdpApiException(
+private[sdk] final case class CdpApiException(
     url: Uri,
     code: Int,
     message: String,
@@ -38,14 +38,19 @@ final case class CdpApiException(
     missingFields: Option[Seq[String]]
 ) extends Throwable(s"Request to ${url.toString()} failed with status ${code.toString}: $message")
 
-final case class CogniteId(id: Long)
+private[sdk] final case class CogniteId(id: Long)
 
+/**
+* Data point returned by queries and retrievals
+ * @param timestamp Timestamp of the datapoint
+ * @param value Value of the data point
+ */
 final case class DataPoint(
     timestamp: Instant,
     value: Double
 )
 
-final case class AggregateDataPoint(
+private[sdk] final case class AggregateDataPoint(
     timestamp: Instant,
     average: Option[Double],
     max: Option[Double],
@@ -59,19 +64,27 @@ final case class AggregateDataPoint(
     discreteVariance: Option[Double]
 )
 
+/**
+* String-valued data point returned by string queries and retrievals
+ * @param timestamp Timestamp of the data point
+ * @param value String value of the data point
+ */
 final case class StringDataPoint(
     timestamp: Instant,
     value: String
 )
 
-trait WithId[I] {
+private[sdk] trait WithId[I] {
   val id: I
 }
 
-trait WithExternalId {
+private[sdk] trait WithExternalId {
   val externalId: Option[String]
 }
 
+/**
+* Decoder for internal usage
+ */
 object EitherDecoder {
   def eitherDecoder[A, B](implicit a: Decoder[A], b: Decoder[B]): Decoder[Either[A, B]] = {
     val l: Decoder[Either[A, B]] = a.map(Left.apply)
@@ -80,12 +93,12 @@ object EitherDecoder {
   }
 }
 
-sealed trait Setter[+T]
-sealed trait NonNullableSetter[+T]
-final case class Set[+T](set: T) extends Setter[T] with NonNullableSetter[T]
-final case class SetNull[+T]() extends Setter[T]
+private[sdk] sealed trait Setter[+T]
+private[sdk] sealed trait NonNullableSetter[+T]
+private[sdk] final case class Set[+T](set: T) extends Setter[T] with NonNullableSetter[T]
+private[sdk] final case class SetNull[+T]() extends Setter[T]
 
-object Setter {
+private[sdk] object Setter {
   @SuppressWarnings(Array("org.wartremover.warts.Null", "scalafix:DisableSyntax.null"))
   implicit def optionToSetter[T: Manifest]: Transformer[Option[T], Option[Setter[T]]] =
     new Transformer[Option[T], Option[Setter[T]]] {
@@ -115,7 +128,7 @@ object Setter {
     }
 }
 
-object NonNullableSetter {
+private[sdk] object NonNullableSetter {
   @SuppressWarnings(
     Array(
       "org.wartremover.warts.Null",

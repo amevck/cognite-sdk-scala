@@ -20,6 +20,9 @@ class SequencesResource[F[_]](val requestSession: RequestSession[F])
     with Update[Sequence, SequenceUpdate, F] {
   import SequencesResource._
 
+  /**
+  * Base URL for requests
+   */
   override val baseUri = uri"${requestSession.baseUri}/sequences"
 
   override private[sdk] def readWithCursor(
@@ -29,24 +32,59 @@ class SequencesResource[F[_]](val requestSession: RequestSession[F])
   ): F[ItemsWithCursor[Sequence]] =
     Readable.readWithCursor(requestSession, baseUri, cursor, limit, None)
 
+  /**
+  * Retrieve sequences by their IDs
+   * @param ids IDs of sequences to retrieve
+   * @return Sequences matching ids
+   */
   override def retrieveByIds(ids: Seq[Long]): F[Seq[Sequence]] =
     RetrieveByIds.retrieveByIds(requestSession, baseUri, ids)
 
+  /**
+  * Retrieve sequences by their external IDs
+   * @param externalIds External IDs of sequences to retrieve
+   * @return Sequences matching externalIds
+   */
   override def retrieveByExternalIds(externalIds: Seq[String]): F[Seq[Sequence]] =
     RetrieveByExternalIds.retrieveByExternalIds(requestSession, baseUri, externalIds)
 
+  /**
+  * Create Sequences
+   * @param items Sequences to create
+   * @return Newly created Sequences
+   */
   override def createItems(items: Items[SequenceCreate]): F[Seq[Sequence]] =
     Create.createItems[F, Sequence, SequenceCreate](requestSession, baseUri, items)
 
+  /**
+  * Update existing sequences
+   * @param items Updates to sequences
+   * @return Newly updated sequences
+   */
   override def update(items: Seq[SequenceUpdate]): F[Seq[Sequence]] =
     Update.update[F, Sequence, SequenceUpdate](requestSession, baseUri, items)
 
+  /**
+  * Delete sequences by their IDs
+   * @param ids IDs of sequences to delete
+   * @return Unit
+   */
   override def deleteByIds(ids: Seq[Long]): F[Unit] =
     DeleteByIds.deleteByIds(requestSession, baseUri, ids)
 
+  /**
+  * Delete sequences by their external IDs
+   * @param externalIds External IDs of sequencs to delete
+   * @return Unit
+   */
   override def deleteByExternalIds(externalIds: Seq[String]): F[Unit] =
     DeleteByExternalIds.deleteByExternalIds(requestSession, baseUri, externalIds)
 
+  /**
+  * Search for sequences matching specific criteria. See documentation on SequenceQuery
+   * @param searchQuery Query to match sequences
+   * @return Sequences matching searchQuery
+   */
   override def search(searchQuery: SequenceQuery): F[Seq[Sequence]] =
     Search.search(requestSession, baseUri, searchQuery)
 }

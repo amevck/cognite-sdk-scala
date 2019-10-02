@@ -46,9 +46,19 @@ class RawDatabases[F[_]](val requestSession: RequestSession[F])
   ): F[ItemsWithCursor[RawDatabase]] =
     Readable.readWithCursor(requestSession, baseUri, cursor, limit, None)
 
+  /**
+  * Create databases. See Items and RawDatabase documentation
+   * @param items Databases to create
+   * @return Sequence of created databases
+   */
   override def createItems(items: Items[RawDatabase]): F[Seq[RawDatabase]] =
     Create.createItems[F, RawDatabase, RawDatabase](requestSession, baseUri, items)
 
+  /**
+  * Delete databases specified by their ID
+   * @param ids IDs of the databases to delete
+   * @return Unit
+   */
   override def deleteByIds(ids: Seq[String]): F[Unit] =
     RawResource.deleteByIds(requestSession, baseUri, ids.map(RawDatabase))
 }
@@ -80,9 +90,19 @@ class RawTables[F[_]](val requestSession: RequestSession[F], database: String)
   ): F[ItemsWithCursor[RawTable]] =
     Readable.readWithCursor(requestSession, baseUri, cursor, limit, None)
 
+  /**
+  * Create tables in database. See documentation on Items and RawTable
+   * @param items The tables to create
+   * @return Sequence of created tables
+   */
   override def createItems(items: Items[RawTable]): F[Seq[RawTable]] =
     Create.createItems[F, RawTable, RawTable](requestSession, baseUri, items)
 
+  /**
+  * Delete tables specified by their IDs
+   * @param ids IDs of the tables to delete
+   * @return Unit
+   */
   override def deleteByIds(ids: Seq[String]): F[Unit] =
     RawResource.deleteByIds(requestSession, baseUri, ids.map(RawTable))
 }
@@ -108,6 +128,11 @@ class RawRows[F[_]](val requestSession: RequestSession[F], database: String, tab
     uri"${requestSession.baseUri}/raw/dbs/$database/tables/$table/rows"
 
   // raw does not return the created rows in the response, so we'll always return an empty sequence.
+  /**
+  * Create rows in a table. See documentation on Items and RawRow
+   * @param items Rows to create
+   * @return Empty sequence
+   */
   override def createItems(items: Items[RawRow]): F[Seq[RawRow]] = {
     implicit val errorOrUnitDecoder: Decoder[Either[CdpApiError, Unit]] =
       EitherDecoder.eitherDecoder[CdpApiError, Unit]
@@ -132,6 +157,11 @@ class RawRows[F[_]](val requestSession: RequestSession[F], database: String, tab
   ): F[ItemsWithCursor[RawRow]] =
     Readable.readWithCursor(requestSession, baseUri, cursor, limit, None)
 
+  /**
+  * Delete rows specified by their IDs
+   * @param ids IDs of the rows to delete
+   * @return Unit
+   */
   override def deleteByIds(ids: Seq[String]): F[Unit] =
     RawResource.deleteByIds(requestSession, baseUri, ids.map(RawRowKey))
 }

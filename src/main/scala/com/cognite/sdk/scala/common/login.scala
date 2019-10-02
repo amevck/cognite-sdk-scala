@@ -5,9 +5,9 @@ import com.softwaremill.sttp._
 import com.softwaremill.sttp.circe._
 import io.circe.derivation.deriveDecoder
 
-final case class LoginStatus(user: String, loggedIn: Boolean, project: String, projectId: Long)
-final case class DataLoginStatus(data: LoginStatus)
-class Login[F[_]](val requestSession: RequestSession[F]) {
+private[sdk] final case class LoginStatus(user: String, loggedIn: Boolean, project: String, projectId: Long)
+private[sdk] final case class DataLoginStatus(data: LoginStatus)
+private[sdk] class Login[F[_]](val requestSession: RequestSession[F]) {
   @SuppressWarnings(Array("org.wartremover.warts.EitherProjectionPartial"))
   implicit val loginStatusDecoder = deriveDecoder[LoginStatus]
   implicit val dataLoginStatusDecoder = deriveDecoder[DataLoginStatus]

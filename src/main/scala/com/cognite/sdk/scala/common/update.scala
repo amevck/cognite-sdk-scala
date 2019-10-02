@@ -17,11 +17,22 @@ trait Update[R <: WithId[Long], U <: WithId[Long], F[_]]
     with BaseUri {
   def update(items: Seq[U]): F[Seq[R]]
 
+  /**
+  * Update elements of this resource after reading them
+   * @param items Sequence of elements of this resource
+   * @param t Function from this resource to its update utility case class
+   * @return Sequence of updated elements
+   */
   def updateFromRead(items: Seq[R])(
       implicit t: Transformer[R, U]
   ): F[Seq[R]] =
     update(items.map(_.transformInto[U]))
 
+  /**
+  * Update an element of this resource
+   * @param item Update utility object
+   * @return The updated item
+   */
   def updateOne(item: U): F[R] =
     requestSession.map(
       update(Seq(item)),
@@ -32,6 +43,12 @@ trait Update[R <: WithId[Long], U <: WithId[Long], F[_]]
         }
     )
 
+  /**
+  * Update an element after reading it
+   * @param item Read item
+   * @param t Transformer from this resource to its update utility case class
+   * @return The updated element of this resource
+   */
   def updateOneFromRead(item: R)(
       implicit t: Transformer[R, U]
   ): F[R] =

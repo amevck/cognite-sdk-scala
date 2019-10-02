@@ -218,5 +218,4 @@ class DataPointsTest extends SdkTest with DataPointsResourceBehaviors {
     }
     aggregateCaught.missing.get.head.toMap("id").toString() shouldEqual missingId.toString
   }
-
 }

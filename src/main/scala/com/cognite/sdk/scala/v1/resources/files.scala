@@ -28,6 +28,11 @@ class Files[F[_]](val requestSession: RequestSession[F])
   implicit val errorOrFileDecoder: Decoder[Either[CdpApiError, File]] =
     EitherDecoder.eitherDecoder[CdpApiError, File]
 
+  /**
+  * Create a File. See FileCreate documentation
+   * @param item File to create
+   * @return The created File
+   */
   override def createOne(item: FileCreate): F[File] =
     requestSession
       .sendCdf { request =>
@@ -43,6 +48,12 @@ class Files[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Upload a File with a specific name
+   * @param input Input stream specifying File
+   * @param name Intended name of the File
+   * @return The uploaded File
+   */
   def uploadWithName(input: java.io.InputStream, name: String): F[File] = {
     val item = FileCreate(name = name)
     requestSession.flatMap(
@@ -72,6 +83,11 @@ class Files[F[_]](val requestSession: RequestSession[F])
     )
   }
 
+  /**
+  * Upload a File
+   * @param file File to upload
+   * @return The uploaded File
+   */
   def upload(file: java.io.File): F[File] = {
     val inputStream = new BufferedInputStream(new FileInputStream(file))
     uploadWithName(inputStream, file.getName())
@@ -84,18 +100,43 @@ class Files[F[_]](val requestSession: RequestSession[F])
   ): F[ItemsWithCursor[File]] =
     Readable.readWithCursor(requestSession, baseUri, cursor, limit, None)
 
+  /**
+  * Retrieve Files by their IDs
+   * @param ids IDs of the Files to retrieve
+   * @return Files corresponding to ids
+   */
   override def retrieveByIds(ids: Seq[Long]): F[Seq[File]] =
     RetrieveByIds.retrieveByIds(requestSession, baseUri, ids)
 
+  /**
+  * Retrieve Files by their external IDs
+   * @param externalIds External IDs of the Files to retrieve
+   * @return Files corresponding to externalIds
+   */
   override def retrieveByExternalIds(externalIds: Seq[String]): F[Seq[File]] =
     RetrieveByExternalIds.retrieveByExternalIds(requestSession, baseUri, externalIds)
 
+  /**
+  * Update Files. See the documentation on FileUpdate
+   * @param items Events to update
+   * @return Updated Files
+   */
   override def update(items: Seq[FileUpdate]): F[Seq[File]] =
     Update.update[F, File, FileUpdate](requestSession, baseUri, items)
 
+  /**
+  * Delete Files based on their IDs
+   * @param ids IDs of the Files to delete
+   * @return Unit
+   */
   override def deleteByIds(ids: Seq[Long]): F[Unit] =
     DeleteByIds.deleteByIds(requestSession, baseUri, ids)
 
+  /**
+  * Delete Files based on their external IDs
+   * @param externalIds External IDs of the Files to delete
+   * @return Unit
+   */
   override def deleteByExternalIds(externalIds: Seq[String]): F[Unit] =
     DeleteByExternalIds.deleteByExternalIds(requestSession, baseUri, externalIds)
 
@@ -107,9 +148,20 @@ class Files[F[_]](val requestSession: RequestSession[F])
   ): F[ItemsWithCursor[File]] =
     Filter.filterWithCursor(requestSession, baseUri, filter, cursor, limit, None)
 
+  /**
+  * Search for Files matching a specified query. See the documentation on FilesQuery
+   * @param searchQuery Query to match Files
+   * @return Files matching the specified query
+   */
   override def search(searchQuery: FilesQuery): F[Seq[File]] =
     Search.search(requestSession, baseUri, searchQuery)
 
+  /**
+  * Download a file. See the documentation on FileDownload
+   * @param item File to download
+   * @param out Outstream where the downloaded File will go
+   * @return Unit
+   */
   def download(item: FileDownload, out: java.io.OutputStream): F[Unit] = {
     val request =
       requestSession

@@ -21,6 +21,13 @@ class SequenceRows[F[_]](val requestSession: RequestSession[F])
   implicit val errorOrUnitDecoder: Decoder[Either[CdpApiError, Unit]] =
     EitherDecoder.eitherDecoder[CdpApiError, Unit]
 
+  /**
+  * Insert rows into a sequence
+   * @param id ID of the sequence to insert into
+   * @param columns Column external IDs in the same order as the values for each row
+   * @param rows List of row information
+   * @return Unit
+   */
   def insertById(id: Long, columns: Seq[String], rows: Seq[SequenceRow]): F[Unit] =
     requestSession
       .sendCdf { request =>
@@ -35,6 +42,13 @@ class SequenceRows[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Insert columns into a sequence by their external IDs
+   * @param externalId External ID of the sequence to insert into
+   * @param columns Column external IDs in the same order as the values for each row
+   * @param rows List of row information
+   * @return
+   */
   def insertByExternalId(
       externalId: String,
       columns: Seq[String],
@@ -57,6 +71,12 @@ class SequenceRows[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Delete rows of a sequence by their IDs. All columns affected
+   * @param id ID of sequence to delete from
+   * @param rows Indices of rows to delete
+   * @return Unit
+   */
   def deleteById(id: Long, rows: Seq[Long]): F[Unit] =
     requestSession
       .sendCdf { request =>
@@ -71,6 +91,12 @@ class SequenceRows[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Delete rows of a sequence by their external IDs. All columns affected
+   * @param externalId externalID of the sequence to delete from
+   * @param rows Indices of rows to delete
+   * @return Unit
+   */
   def deleteByExternalId(externalId: String, rows: Seq[Long]): F[Unit] =
     requestSession
       .sendCdf { request =>
@@ -85,6 +111,15 @@ class SequenceRows[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Query rows of a sequence by the sequence ID
+   * @param id ID of the sequence to query
+   * @param inclusiveStart Lowest row number included
+   * @param exclusiveEnd First row number higher than inclusiveStart not included
+   * @param limit Maximum number of rows returned
+   * @param columns Columns included in the return value
+   * @return List of row information
+   */
   def queryById(
       id: Long,
       inclusiveStart: Long,
@@ -105,6 +140,15 @@ class SequenceRows[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Query rows of a sequence by the sequenc externalID
+   * @param externalId external ID of the sequence to query
+   * @param inclusiveStart Lowest row number included
+   * @param exclusiveEnd First row number higher than inclusiveStart not included
+   * @param limit Maximum number of rows returned
+   * @param columns Columns included in the return value
+   * @return List of row information
+   */
   def queryByExternalId(
       externalId: String,
       inclusiveStart: Long,

@@ -23,32 +23,43 @@ import com.cognite.v1.timeseries.proto.data_points.{
 }
 import io.circe.parser.decode
 
+
 class DataPointsResource[F[_]](val requestSession: RequestSession[F])
     extends WithRequestSession[F]
     with BaseUri {
 
   import DataPointsResource._
 
+  /**
+  * Base URL for API calls
+   */
   override val baseUri = uri"${requestSession.baseUri}/timeseries/data"
 
-  implicit val errorOrDataPointsByIdResponseDecoder
+  private[sdk] implicit val errorOrDataPointsByIdResponseDecoder
       : Decoder[Either[CdpApiError, Items[DataPointsByIdResponse]]] =
     EitherDecoder.eitherDecoder[CdpApiError, Items[DataPointsByIdResponse]]
-  implicit val errorOrDataPointsByExternalIdResponseDecoder
+  private[sdk] implicit val errorOrDataPointsByExternalIdResponseDecoder
       : Decoder[Either[CdpApiError, Items[DataPointsByExternalIdResponse]]] =
     EitherDecoder.eitherDecoder[CdpApiError, Items[DataPointsByExternalIdResponse]]
-  implicit val errorOrStringDataPointsByIdResponseDecoder
+  private[sdk] implicit val errorOrStringDataPointsByIdResponseDecoder
       : Decoder[Either[CdpApiError, Items[StringDataPointsByIdResponse]]] =
     EitherDecoder.eitherDecoder[CdpApiError, Items[StringDataPointsByIdResponse]]
-  implicit val errorOrStringDataPointsByExternalIdResponseDecoder
+  private[sdk] implicit val errorOrStringDataPointsByExternalIdResponseDecoder
       : Decoder[Either[CdpApiError, Items[StringDataPointsByExternalIdResponse]]] =
     EitherDecoder.eitherDecoder[CdpApiError, Items[StringDataPointsByExternalIdResponse]]
-  implicit val errorOrUnitDecoder: Decoder[Either[CdpApiError, Unit]] =
+  private[sdk] implicit val errorOrUnitDecoder: Decoder[Either[CdpApiError, Unit]] =
     EitherDecoder.eitherDecoder[CdpApiError, Unit]
-  implicit val errorOrAggregateDataPointsByAggregateResponseDecoder
+  private[sdk] implicit val errorOrAggregateDataPointsByAggregateResponseDecoder
       : Decoder[Either[CdpApiError, Items[QueryAggregatesByIdResponse]]] =
     EitherDecoder.eitherDecoder[CdpApiError, Items[QueryAggregatesByIdResponse]]
 
+  /**
+  *
+   * Insert data points into a time series specified by ID
+   * @param id The id time series to insert data points into
+   * @param dataPoints The data points to insert into the time series
+   * @return Unit
+   */
   def insertById(id: Long, dataPoints: Seq[DataPoint]): F[Unit] =
     requestSession
       .sendCdf(
@@ -78,6 +89,12 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
         contentType = "application/protobuf"
       )
 
+  /**
+  * Insert data points into a time series specified by external ID
+   * @param externalId The external ID of the time series to insert data points into
+   * @param dataPoints The data points to insert into the time series
+   * @return Unit
+   */
   def insertByExternalId(externalId: String, dataPoints: Seq[DataPoint]): F[Unit] =
     requestSession
       .sendCdf { request =>
@@ -92,6 +109,12 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Insert string-valued data points into a time series specified by ID
+   * @param id The ID of the time series to insert data points into
+   * @param dataPoints The string-valued data points to insert into the time series
+   * @return Unit
+   */
   def insertStringsById(id: Long, dataPoints: Seq[StringDataPoint]): F[Unit] =
     requestSession
       .sendCdf(
@@ -121,7 +144,7 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
         contentType = "application/protobuf"
       )
 
-  def parseStringDataPoints(response: DataPointListResponse): Seq[StringDataPoint] =
+  private def parseStringDataPoints(response: DataPointListResponse): Seq[StringDataPoint] =
     response.items
       .map(
         x =>
@@ -131,7 +154,7 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
       .headOption
       .getOrElse(Seq.empty)
 
-  def parseNumericDataPoints(response: DataPointListResponse): Seq[DataPoint] =
+  private def parseNumericDataPoints(response: DataPointListResponse): Seq[DataPoint] =
     response.items
       .map(
         x => {
@@ -142,10 +165,10 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
       .headOption
       .getOrElse(Seq.empty)
 
-  def screenOutNan(d: Double): Option[Double] =
+  private def screenOutNan(d: Double): Option[Double] =
     if (d.isNaN) None else Some(d)
 
-  def parseAggregateDataPoints(response: DataPointListResponse): Seq[AggregateDataPoint] =
+  private def parseAggregateDataPoints(response: DataPointListResponse): Seq[AggregateDataPoint] =
     response.items
       .map(
         x => {
@@ -171,6 +194,12 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
       .headOption
       .getOrElse(Seq.empty)
 
+  /**
+  * Insert string-valued data points into a time series specified by external ID
+   * @param externalId The external ID of the time series to insert data points into
+   * @param dataPoints The data points to insert into the time series
+   * @return Unit
+   */
   def insertStringsByExternalId(externalId: String, dataPoints: Seq[StringDataPoint]): F[Unit] =
     requestSession
       .sendCdf { request =>
@@ -185,6 +214,13 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Delete data points within a time range for a time series specified by ID
+   * @param id The time series for which to delete data
+   * @param inclusiveStart The inclusive start of the deletion range
+   * @param exclusiveEnd The exclusive end of the deletion range
+   * @return Unit
+   */
   def deleteRangeById(id: Long, inclusiveStart: Instant, exclusiveEnd: Instant): F[Unit] =
     requestSession
       .sendCdf { request =>
@@ -201,6 +237,13 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Delete data points within a range for a time series specified by external ID
+   * @param externalId The external ID of the time series for which to delete data
+   * @param inclusiveStart The inclusive start of the deletion range
+   * @param exclusiveEnd The exclusive end of the deletion range
+   * @return Unit
+   */
   def deleteRangeByExternalId(
       externalId: String,
       inclusiveStart: Instant,
@@ -229,6 +272,14 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+  * Query data points in a time range for a time series specified by ID
+   * @param id The ID of the time series for which to retrieve data points
+   * @param inclusiveStart The inclusive start of the query range
+   * @param exclusiveEnd The exclusive range of the query range
+   * @param limit The maximum number of data points to query. Defaults to None.
+   * @return Sequence of data points for the time series within the query range
+   */
   def queryById(
       id: Long,
       inclusiveStart: Instant,
@@ -244,6 +295,14 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
     queryProtobuf(Items(Seq(query)))(parseNumericDataPoints)
   }
 
+  /**
+   * Query data points in a time range for a time series specified by external ID
+   * @param externalId The external ID of the time series for which to retrieve data points
+   * @param inclusiveStart The inclusive start of the query range
+   * @param exclusiveEnd The exclusive range of the query range
+   * @param limit The maximum number of data points to query. Defaults to None.
+   * @return Sequence of data points for the time series within the query range
+   */
   def queryByExternalId(
       externalId: String,
       inclusiveStart: Instant,
@@ -260,6 +319,17 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
     queryProtobuf(Items(Seq(query)))(parseNumericDataPoints)
   }
 
+  /**
+  * Query aggregate data point values for a time series within a time range
+   * @param id The ID of the time series for which to retrieve data points
+   * @param inclusiveStart The inclusive start time of the query range
+   * @param exclusiveEnd The exclusive end time of the query range
+   * @param granularity The frequency to calculate aggregate values
+   * @param aggregates The list of aggregate values to return for each data point
+   * @param limit The maximum number of data points to query. Defaults to None.
+   * @return Map of aggregate name to list of data points containing the value of that aggregate at a given time. One
+   *         key value for each specified aggregate.
+   */
   def queryAggregatesById(
       id: Long,
       inclusiveStart: Instant,
@@ -285,6 +355,17 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
       toAggregateMap(parseAggregateDataPoints(dataPointListResponse))
     }
 
+  /**
+   * Query aggregate data point values for a time series within a time range
+   * @param externalId The external ID of the time series for which to retrieve data points
+   * @param inclusiveStart The inclusive start time of the query range
+   * @param exclusiveEnd The exclusive end time of the query range
+   * @param granularity The frequency to calculate aggregate values
+   * @param aggregates The list of aggregate values to return for each data point
+   * @param limit The maximum number of data points to query. Defaults to None.
+   * @return Map of aggregate name to list of data points containing the value of that aggregate at a given time. One
+   *         key value for each specified aggregate.
+   */
   def queryAggregatesByExternalId(
       externalId: String,
       inclusiveStart: Instant,
@@ -327,6 +408,14 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
         accept = "application/protobuf"
       )
 
+  /**
+   * Query string-valued data points in a time range for a time series specified by ID
+   * @param id The ID of the time series for which to retrieve data points
+   * @param inclusiveStart The inclusive start of the query range
+   * @param exclusiveEnd The exclusive range of the query range
+   * @param limit The maximum number of data points to query. Defaults to None.
+   * @return Sequence of string-valued data points for the time series within the query range
+   */
   def queryStringsById(
       id: Long,
       inclusiveStart: Instant,
@@ -342,6 +431,14 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
     queryProtobuf(Items(Seq(query)))(parseStringDataPoints)
   }
 
+  /**
+   * Query string-valued data points in a time range for a time series specified by external ID
+   * @param externalId The external ID of the time series for which to retrieve data points
+   * @param inclusiveStart The inclusive start of the query range
+   * @param exclusiveEnd The exclusive range of the query range
+   * @param limit The maximum number of data points to query. Defaults to None.
+   * @return Sequence of string-valued data points for the time series within the query range
+   */
   def queryStringsByExternalId(
       externalId: String,
       inclusiveStart: Instant,
@@ -358,6 +455,11 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
     queryProtobuf(Items(Seq(query)))(parseStringDataPoints)
   }
 
+  /**
+  * Retrieve the latest data point for a time series specified by ID
+   * @param id The ID of the time series
+   * @return The latest data point it if exists or None if it does not
+   */
   def getLatestDataPointById(id: Long): F[Option[DataPoint]] =
     requestSession.map(
       getLatestDataPointsByIds(Seq(id)),
@@ -371,6 +473,11 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
         }
     )
 
+  /**
+   * Retrieve the latest data point for a time series specified by external ID
+   * @param externalId The ID of the time series
+   * @return The latest data point it if exists or None if it does not
+   */
   def getLatestDataPointByExternalId(externalId: String): F[Option[DataPoint]] =
     requestSession.map(
       getLatestDataPointsByExternalIds(Seq(externalId)),
@@ -384,6 +491,11 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
         }
     )
 
+  /**
+  * Retrive the latest data point for a group of time series specified by their IDs
+   * @param ids The sequence of time series
+   * @return Map of time series ID to the latest data point for that series if it exists, or None if it does not
+   */
   def getLatestDataPointsByIds(ids: Seq[Long]): F[Map[Long, Option[DataPoint]]] =
     requestSession
       .sendCdf { request =>
@@ -401,6 +513,12 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+   * Retrive the latest data point for a group of time series specified by their external IDs
+   * @param ids The sequence of time series
+   * @return Map of time series external ID to the latest data point for that series if it exists, or
+   *         None if it does not
+   */
   def getLatestDataPointsByExternalIds(ids: Seq[String]): F[Map[String, Option[DataPoint]]] =
     requestSession
       .sendCdf { request =>
@@ -418,6 +536,11 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+   * Retrieve the latest string-valued data point for a time series specified by ID
+   * @param id The ID of the time series
+   * @return The latest string-valued data point it if exists or None if it does not
+   */
   def getLatestStringDataPointById(id: Long): F[Option[StringDataPoint]] =
     requestSession.map(
       getLatestStringDataPointByIds(Seq(id)),
@@ -431,6 +554,11 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
         }
     )
 
+  /**
+   * Retrieve the latest string-valued data point for a time series specified by external ID
+   * @param externalId The ID of the time series
+   * @return The latest string-valued data point it if exists or None if it does not
+   */
   def getLatestStringDataPointByExternalId(externalId: String): F[Option[StringDataPoint]] =
     requestSession.map(
       getLatestStringDataPointByExternalIds(Seq(externalId)),
@@ -444,6 +572,12 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
         }
     )
 
+  /**
+   * Retrive the latest string-valued data point for a group of time series specified by their IDs
+   * @param ids The sequence of time series
+   * @return Map of time series ID to the latest string-valueddata point for that series if it exists, or None if
+   *         it does not
+   */
   def getLatestStringDataPointByIds(ids: Seq[Long]): F[Map[Long, Option[StringDataPoint]]] =
     requestSession
       .sendCdf { request =>
@@ -461,6 +595,12 @@ class DataPointsResource[F[_]](val requestSession: RequestSession[F])
           }
       }
 
+  /**
+   * Retrive the latest string-valued data point for a group of time series specified by their external IDs
+   * @param ids The sequence of time series
+   * @return Map of time series external ID to the latest string-valued data point for that series if it exists,
+   *         or None if it does not
+   */
   def getLatestStringDataPointByExternalIds(
       ids: Seq[String]
   ): F[Map[String, Option[StringDataPoint]]] =

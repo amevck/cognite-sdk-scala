@@ -15,6 +15,12 @@ final case class FilterRequest[T](
     partition: Option[String]
 )
 
+/**
+* Trait common to resources that support filtering
+ * @tparam R
+ * @tparam Fi
+ * @tparam F
+ */
 trait Filter[R, Fi, F[_]] extends WithRequestSession[F] with BaseUri {
   private[sdk] def filterWithCursor(
       filter: Fi,
@@ -32,11 +38,17 @@ trait Filter[R, Fi, F[_]] extends WithRequestSession[F] with BaseUri {
       .pullFromCursor(cursor, limit, None, filterWithCursor(filter, _, _, _))
       .stream
 
+  /**
+  * Filter resources from certain criteria
+   * @param filter Filter by which to select elements of this resources
+   * @param limit Maximum number of elements to return
+   * @return Stream of elements of this resource
+   */
   def filter(filter: Fi, limit: Option[Int] = None): Stream[F, R] =
     filterWithNextCursor(filter, None, limit)
 }
 
-trait PartitionedFilter[R, Fi, F[_]] extends Filter[R, Fi, F] {
+private[sdk] trait PartitionedFilter[R, Fi, F[_]] extends Filter[R, Fi, F] {
   def filterPartitions(
       filter: Fi,
       numPartitions: Int,

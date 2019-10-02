@@ -5,16 +5,30 @@ import com.softwaremill.sttp._
 import com.softwaremill.sttp.circe._
 import io.circe.{Decoder, Encoder}
 
+/**
+* For Internal Use. Trait common to searchable resources.
+ * @tparam F
+ * @tparam S
+ */
 trait SearchQuery[F, S] {
   val filter: Option[F]
   val search: Option[S]
   val limit: Int
 }
 
+/**
+* For Internal Use. Trait common to searchable resources..
+ * @tparam R
+ * @tparam Q
+ * @tparam F
+ */
 trait Search[R, Q, F[_]] extends WithRequestSession[F] with BaseUri {
   def search(searchQuery: Q): F[Seq[R]]
 }
 
+/**
+* For internal use.
+ */
 object Search {
   def search[F[_], R, Q](requestSession: RequestSession[F], baseUri: Uri, searchQuery: Q)(
       implicit itemsDecoder: Decoder[Items[R]],

@@ -2,67 +2,67 @@ package com.cognite.sdk.scala.v1
 
 import com.cognite.sdk.scala.common.{AggregateDataPoint, DataPoint, StringDataPoint}
 
-final case class DataPointsById(
+final private[sdk] case class DataPointsById(
     id: Long,
     datapoints: Seq[DataPoint]
 )
 
-final case class DataPointsByExternalId(
+final private[sdk] case class DataPointsByExternalId(
     externalId: String,
     datapoints: Seq[DataPoint]
 )
 
-final case class DataPointsByIdResponse(
+final private[sdk] case class DataPointsByIdResponse(
     id: Long,
     externalId: Option[String],
     isString: Boolean,
     datapoints: Seq[DataPoint]
 )
 
-final case class DataPointsByExternalIdResponse(
+final private[sdk] case class DataPointsByExternalIdResponse(
     id: Long,
     externalId: String,
     isString: Boolean,
     datapoints: Seq[DataPoint]
 )
 
-final case class StringDataPointsByIdResponse(
+final private[sdk] case class StringDataPointsByIdResponse(
     id: Long,
     externalId: Option[String],
     isString: Boolean,
     datapoints: Seq[StringDataPoint]
 )
 
-final case class StringDataPointsByExternalIdResponse(
+final private[sdk] case class StringDataPointsByExternalIdResponse(
     id: Long,
     externalId: String,
     isString: Boolean,
     datapoints: Seq[StringDataPoint]
 )
 
-final case class StringDataPointsById(
+final private[sdk] case class StringDataPointsById(
     id: Long,
     datapoints: Seq[StringDataPoint]
 )
 
-final case class StringDataPointsByExternalId(
+final private[sdk] case class StringDataPointsByExternalId(
     externalId: String,
     datapoints: Seq[StringDataPoint]
 )
 
-final case class DeleteRangeById(
+final private[sdk] case class DeleteRangeById(
     id: Long,
     inclusiveBegin: Long,
     exclusiveEnd: Long
 )
 
-final case class DeleteRangeByExternalId(
+final private[sdk] case class DeleteRangeByExternalId(
     externalId: String,
     inclusiveBegin: Long,
     exclusiveEnd: Long
 )
 
-final case class QueryRangeById(
+final private[sdk] case class QueryRangeById(
     id: Long,
     start: String,
     end: String,
@@ -71,7 +71,7 @@ final case class QueryRangeById(
     aggregates: Option[Seq[String]] = None
 )
 
-final case class QueryRangeByExternalId(
+final private[sdk] case class QueryRangeByExternalId(
     externalId: String,
     start: String,
     end: String,
@@ -80,7 +80,7 @@ final case class QueryRangeByExternalId(
     aggregates: Option[Seq[String]] = None
 )
 
-final case class QueryAggregatesByIdResponse(
+final private[sdk] case class QueryAggregatesByIdResponse(
     id: Long,
     externalId: Option[String],
     datapoints: Seq[AggregateDataPoint]

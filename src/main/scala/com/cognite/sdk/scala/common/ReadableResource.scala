@@ -19,6 +19,12 @@ trait Readable[R, F[_]] extends WithRequestSession[F] with BaseUri {
       limit: Option[Int],
       partition: Option[Partition]
   ): F[ItemsWithCursor[R]]
+
+  /**
+  * Read items of this resource
+   * @param limit maximum number of items to read
+   * @return
+   */
   def read(limit: Option[Int] = None): F[ItemsWithCursor[R]] =
     readWithCursor(None, limit, None)
 
@@ -30,6 +36,11 @@ trait Readable[R, F[_]] extends WithRequestSession[F] with BaseUri {
       .pullFromCursor(cursor, limit, None, readWithCursor)
       .stream
 
+  /**
+  * List elements of this resource
+   * @param limit Optional maximum number of elements to return
+   * @return Elements of this resource
+   */
   def list(limit: Option[Int] = None): Stream[F, R] =
     listWithNextCursor(None, limit)
 }
@@ -111,7 +122,18 @@ object Readable {
 }
 
 trait RetrieveByIds[R, F[_]] extends WithRequestSession[F] with BaseUri {
+  /**
+  * Retrieve elements of this resource by IDs
+   * @param ids IDs of the resources to retrieve
+   * @return Elemernts of this resource corresponding to IDs
+   */
   def retrieveByIds(ids: Seq[Long]): F[Seq[R]]
+
+  /**
+  * Retrieve a single element of this resource by its ID
+   * @param id ID of the element to retrieve
+   * @return The element matching id, if it exists, or None if it does not
+   */
   def retrieveById(id: Long): F[Option[R]] =
     requestSession.map(retrieveByIds(Seq(id)), (r1: Seq[R]) => r1.headOption)
 }
@@ -142,6 +164,12 @@ object RetrieveByIds {
 
 trait RetrieveByExternalIds[R, F[_]] extends WithRequestSession[F] with BaseUri {
   def retrieveByExternalIds(externalIds: Seq[String]): F[Seq[R]]
+
+  /**
+  * Retrieve a single item of this resource by its external ID
+   * @param externalIds external ID of the item to retrieve
+   * @return The element of this resource correspondign to externalIDs if it exists, or none if it does not
+   */
   def retrieveByExternalId(externalIds: String): F[Option[R]] =
     requestSession.map(retrieveByExternalIds(Seq(externalIds)), (r1: Seq[R]) => r1.headOption)
 }
